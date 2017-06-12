@@ -1,15 +1,15 @@
 import xml.sax
 import xml.etree.ElementTree as ET
-
+from sys import exit
 class Usuario(object):
-    def __init__(self,nombre=None,contra=None):
+    def __init__(self,nombre=None,contra=None,matriz=None):
         self.nombre = nombre
         self.contra = contra
-    
-class NodoCircular(object):
-    def __init__(self,matriz=None,cola=None,siguiente=None,usuario=None,anterior=None):
+        self.cola = cola()
         self.matriz = matriz
-        self.cola = cola
+        self.cargado = False
+class NodoCircular(object):
+    def __init__(self,siguiente=None,usuario=None,anterior=None):
         self.siguiente = self
         self.anterior = self
         self.usuario = usuario
@@ -40,12 +40,22 @@ class ListaCircular(object):
                 return True
             actual = actual.siguiente
         return False
+    def buscaru(self,dato):
+        actual = self.acceso
+        if (actual.usuario.nombre == dato.nombre) and (actual.usuario.contra == dato.contra):
+             return True
+        actual = actual.siguiente
+        while actual != self.acceso:
+            if (actual.usuario.nombre == dato.nombre) and (actual.usuario.contra == dato.contra):
+                return actual.usuario
+            actual = actual.siguiente
+        return None
     
 class Nodo(object):
 
-    def __init__(self, dato=None,siguiente=None):
+    def __init__(self, dato=None):
         self.dato = dato
-        self.siguiente = siguiente
+        self.siguiente = None
 		
 class Pila(object):
     
@@ -115,63 +125,64 @@ class Lista(object):
     def tamanio(self):
         actual = self.cabeza
         contador = 0
-        while actual:
+        while actual.siguiente is not None:
             contador += 1
-            actual = actual.get_siguiente()
-        return count
-
-    def buscar(self,dato):
-        contador = 0
-        actual = self.cabeza
-        encontrado = False
-        while actual and encontrado is False:
-            if actual.get_dato() == dato:
-                encontrado = True
-                "valor encontrado en" + str(contador)
-            else:
-                actual = actual.get_siguiente()
-        i+=1
-        if actual is None:
-            raise ValueError("Dato no encontrado")
-        return "valor no encontrado"
+            actual = actual.siguiente
+        return contador
     
-    def buscarin(self,indice):
+    def modificar(self,indice,dato ):
         encontrado = False
         actual = self.cabeza
-        for i in range(0,indicie):
+        for i in range(0,indice):
+            if actual.siguiente is not None:
+                actual = actual.siguiente
+        actual.dato = dato
+    
+    def buscarin(self,indice ):
+        encontrado = False
+        actual = self.cabeza
+        for i in range(0,indice):
             if actual.siguiente is not None:
                 actual = actual.siguiente
             else:
-                return 'Dato no encontrado'
+                return None
         return actual.dato
-    def eliminar(self, dato):
-        actual = self.cabeza
-        previo = None
-        encontrado = False
-        while actual is not None and encontrado is False:
-            if actual.get_dato() == dato:
-                encontrado = True
-            else:
-                previo = actual
-                actual = actual.get_siguiente()
-        if actual is not None:
-            if(actual==self.cabeza):
-                self.cabeza = actual.siguiente
-            else:
-                previo.siguiente = actual.siguiente
-            actual = None
-            return "valor eliminado"
-        else:
-             return "valor no encontrado"
 
 class Matriz(object):  
     def __init__(self,x,y):
-        indice = Lista()
-        for i in range(0,x):
-            indice.insertar(Lista())
-            for j in range(0,y):
-                indice.
-            print (i)
+        self.x = x
+        self.y = y
+        self.indice = Lista()
+        for i in range(0,y):
+            nueva = Lista()
+            for j in range(0,x):
+                
+                nueva.insertar(0)
+            self.indice.insertar(nueva)
+            print(self.indice.buscarin(i).tamanio())
+            
+    def graficarmat(self):
+        a = ''
+        for i in range(0,self.y):
+            for j in range(0,self.x):
+                a = a + " " + str(self.indice.buscarin(i).buscarin(j))
+            print('|' + a + '|')
+            a = ''
+            
+    def insertar(self,x,y,dato):
+        if(x < self.x and y < self.y):
+            self.indice.buscarin(x).modificar(y,dato)
+            print('El dato ha sido ingresado')
+        else:
+            print("los valores son incorrectos")
+        
+    def graficartrans(self):
+        a = ''
+        for i in range(0,self.x):
+            for j in range(0,self.y):
+                a = a + " " + str(self.indice.buscarin(j).buscarin(i))
+            print('|' + a + '|')
+            a = ''
 
 mat = Matriz(5,5)
 
@@ -180,6 +191,14 @@ u = Usuario("asf","fdsa")
 
 usuarios.insertar(Usuario("prueba","fdasio"))
 usuarios.insertar(u)
+print(mat.indice.tamanio())
+
+print(mat.indice.buscarin(2).buscarin(3))
+mat.insertar(2,2,5)
+mat.graficarmat()
+usuarioactivo = Usuario()
+
+stack = Pila()
 
 def graficarusuarios():
     actual = usuarios.acceso
@@ -215,13 +234,34 @@ def menuprincipal():
         crear()
     elif opcion == '2':
         ingresar()
+    elif opcion == '3':
+        exit()
+    else:
+        print(' ')
+        menuprincipal()
 
 def opciones():
     print("1. Leer archivo", "2. Resolver operaciones", "3. Operar la matriz", "4. Mostrar usuarios", "5. Mostrar cola", "6. Cerrar sesion",sep="\n")
     opcion = input()
     if opcion == '1':
         leer()
-        
+    elif opcion == '2':
+        operaciones()
+    elif opcion == '3':
+        menumatriz()
+    elif opcion == '4':
+        graficarusuarios()
+        print('')
+        graficarusuarios2()
+    elif opcion == '5':
+        graficarcola()
+        opciones()
+    elif opcion == '6':
+        usuarioactivo = Usuario()
+        menuprincipal()
+    else:
+        print(' ')
+        opciones()
 def leer():
     archivo = input("Ingrese el nombre del archivo: ")
     tree = ET.parse(archivo)
@@ -230,24 +270,96 @@ def leer():
     for matriz in root.findall('matriz'):
         x = matriz.find('x').text
         y = matriz.find('y').text
-        print (x,y)
+        usuarioactivo.matriz = Matriz(int(x),int(y))
     
     for operacion in root.iter('operacion'):
-        print(operacion.text)
-
+        usuarioactivo.cola.insertar(operacion.text)
+    print('archivo leido')
+    print('')
+    opciones()
+    
+def graficarcola():
+    i = 0
+    actual = usuarioactivo.cola.inicio
+    if (usuarioactivo.cola.vacia()==True):
+        pass
+    else:
+        while(actual != None):          
+            if(actual.siguiente is not None):
+                temp = Nodo()
+                temp = actual.siguiente                
+            print(actual.dato)
+            actual = actual.siguiente
     
 def operaciones():
     print("1. Operar siguiente", "2. Regresar", sep="\n")
-
+    opcion = input()
+    if opcion == '1':
+        operar()
+    elif opcion == '2':
+        opciones()
 def menumatriz():
     print("1. Ingresar Dato","2. Operar Transpuesta", "3. Mostrar Matriz Original", "4. Mostrar Matriz Transpuesta", "5. Regresar", sep="\n")
+    opcion = input()
+    
+    if opcion == '1':
+        x = input('Ingrese la posicion en X: ')
+        y = input('Ingrese la posicion en Y: ')
+        dato = input('Ingrese el dato: ')
+        usuarioactivo.matriz.insertar(int(y),int(x),dato)
+        
+        print('')
+        menumatriz()
+    elif opcion == '2':
+        transpuesta = usuarioactivo.matriz
+        print('La matriz ha sido creada')
+        menumatriz()
+    elif opcion == '3':
+        print('')
+        usuarioactivo.matriz.graficarmat()
+        print('')
+        menumatriz()
+    elif opcion == '4':
+        usuarioactivo.matriz.graficartrans()
+        print('')
+        menumatriz()
+    elif opcion == '5':
+        opciones()
+    else:
+        print('')
+        menumatriz()
+def operar():
+    ope = usuarioactivo.cola.extraer()
+    lis = ope.split()
+    lis.reverse()
+    for p in lis:
+        stack.push(p)
+    while(not stack.vacia()):
+        a = stack.pop()
+        if stack.vacia():
+            print('Resultado: ' + str(a))
+            print('')
+            break
+        b = stack.pop()
+        op = stack.pop()
+        if op == '+':
+            res = int(a) + int(b)
+        elif op == '-':
+            res = int(a) - int(b)
+        elif op == '*':
+            res = int(a) * int(b)
+        stack.push(res)
+        print(str(a) +  " " + str(op) + " " + str(b) + " = " + str(res))
+    opciones()
 
 def ingresar():
     nombre = input("Ingrese el nombre: ")
     contra = input("Ingrese la contraseña: ")
     if usuarios.buscar(Usuario(nombre,contra)):
+        usuarioactivo = usuarios.buscar(Usuario(nombre,contra))
         print('Bienvenido')
         opciones()
-
+    else:
+        print('Ingreso invalido')
 menuprincipal()
 
