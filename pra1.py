@@ -159,7 +159,7 @@ class Matriz(object):
                 
                 nueva.insertar(0)
             self.indice.insertar(nueva)
-            print(self.indice.buscarin(i).tamanio())
+            #print(self.indice.buscarin(i).tamanio())
             
     def graficarmat(self):
         a = ''
@@ -191,14 +191,27 @@ u = Usuario("asf","fdsa")
 
 usuarios.insertar(Usuario("prueba","fdasio"))
 usuarios.insertar(u)
-print(mat.indice.tamanio())
+#print(mat.indice.tamanio())
 
-print(mat.indice.buscarin(2).buscarin(3))
-mat.insertar(2,2,5)
-mat.graficarmat()
+#print(mat.indice.buscarin(2).buscarin(3))
+#mat.insertar(2,2,5)
+#mat.graficarmat()
+
 usuarioactivo = Usuario()
 
 stack = Pila()
+
+def ingresar():
+    nombre = input("Ingrese el nombre: ")
+    contra = input("Ingrese la contraseña: ")
+    if usuarios.buscar(Usuario(nombre,contra)):      
+        usuarioactivo = usuarios.buscar(Usuario(nombre,contra))
+        print('Bienvenido')
+        opciones()
+    else:
+        print('Ingreso invalido')
+        print('')
+        menuprincipal()
 
 def graficarusuarios():
     actual = usuarios.acceso
@@ -244,7 +257,7 @@ def opciones():
     print("1. Leer archivo", "2. Resolver operaciones", "3. Operar la matriz", "4. Mostrar usuarios", "5. Mostrar cola", "6. Cerrar sesion",sep="\n")
     opcion = input()
     if opcion == '1':
-        leer()
+        leer()   
     elif opcion == '2':
         operaciones()
     elif opcion == '3':
@@ -253,28 +266,33 @@ def opciones():
         graficarusuarios()
         print('')
         graficarusuarios2()
+        print('')
+        opciones()
     elif opcion == '5':
         graficarcola()
         opciones()
     elif opcion == '6':
-        usuarioactivo = Usuario()
+        usuarioactivo = None
         menuprincipal()
     else:
         print(' ')
         opciones()
+        
+
 def leer():
     archivo = input("Ingrese el nombre del archivo: ")
     tree = ET.parse(archivo)
     root = tree.getroot()
-    
     for matriz in root.findall('matriz'):
         x = matriz.find('x').text
         y = matriz.find('y').text
+        
         usuarioactivo.matriz = Matriz(int(x),int(y))
     
     for operacion in root.iter('operacion'):
         usuarioactivo.cola.insertar(operacion.text)
     print('archivo leido')
+    usuarioactivo.cargado = True
     print('')
     opciones()
     
@@ -298,10 +316,12 @@ def operaciones():
         operar()
     elif opcion == '2':
         opciones()
+    else:
+        print('')
+        operaciones()
 def menumatriz():
     print("1. Ingresar Dato","2. Operar Transpuesta", "3. Mostrar Matriz Original", "4. Mostrar Matriz Transpuesta", "5. Regresar", sep="\n")
     opcion = input()
-    
     if opcion == '1':
         x = input('Ingrese la posicion en X: ')
         y = input('Ingrese la posicion en Y: ')
@@ -352,14 +372,6 @@ def operar():
         print(str(a) +  " " + str(op) + " " + str(b) + " = " + str(res))
     opciones()
 
-def ingresar():
-    nombre = input("Ingrese el nombre: ")
-    contra = input("Ingrese la contraseña: ")
-    if usuarios.buscar(Usuario(nombre,contra)):
-        usuarioactivo = usuarios.buscar(Usuario(nombre,contra))
-        print('Bienvenido')
-        opciones()
-    else:
-        print('Ingreso invalido')
+
 menuprincipal()
 
