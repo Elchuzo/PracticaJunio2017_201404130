@@ -33,13 +33,13 @@ class ListaCircular(object):
     def buscar(self,dato):
         actual = self.acceso
         if (actual.usuario.nombre == dato.nombre) and (actual.usuario.contra == dato.contra):
-             return True
+             return actual.usuario
         actual = actual.siguiente
         while actual != self.acceso:
             if (actual.usuario.nombre == dato.nombre) and (actual.usuario.contra == dato.contra):
-                return True
+                return actual.usuario
             actual = actual.siguiente
-        return False
+        return None
     def buscaru(self,dato):
         actual = self.acceso
         if (actual.usuario.nombre == dato.nombre) and (actual.usuario.contra == dato.contra):
@@ -196,7 +196,8 @@ usuarios.insertar(u)
 #print(mat.indice.buscarin(2).buscarin(3))
 #mat.insertar(2,2,5)
 #mat.graficarmat()
-
+nombre = ''
+contra = ''
 usuarioactivo = Usuario()
 
 stack = Pila()
@@ -204,7 +205,8 @@ stack = Pila()
 def ingresar():
     nombre = input("Ingrese el nombre: ")
     contra = input("Ingrese la contraseña: ")
-    if usuarios.buscar(Usuario(nombre,contra)):      
+    if usuarios.buscar(Usuario(nombre,contra)) is not None:
+        global usuarioactivo
         usuarioactivo = usuarios.buscar(Usuario(nombre,contra))
         print('Bienvenido')
         opciones()
@@ -256,11 +258,12 @@ def menuprincipal():
 def opciones():
     print("1. Leer archivo", "2. Resolver operaciones", "3. Operar la matriz", "4. Mostrar usuarios", "5. Mostrar cola", "6. Cerrar sesion",sep="\n")
     opcion = input()
+    global usuarioactivo
     if opcion == '1':
         leer()   
-    elif opcion == '2':
+    elif opcion == '2' and usuarioactivo.cargado:
         operaciones()
-    elif opcion == '3':
+    elif opcion == '3' and usuarioactivo.cargado:
         menumatriz()
     elif opcion == '4':
         graficarusuarios()
@@ -271,7 +274,7 @@ def opciones():
     elif opcion == '5':
         graficarcola()
         opciones()
-    elif opcion == '6':
+    elif opcion == '6': 
         usuarioactivo = None
         menuprincipal()
     else:
@@ -283,12 +286,14 @@ def leer():
     archivo = input("Ingrese el nombre del archivo: ")
     tree = ET.parse(archivo)
     root = tree.getroot()
-    for matriz in root.findall('matriz'):
-        x = matriz.find('x').text
-        y = matriz.find('y').text
-        
-        usuarioactivo.matriz = Matriz(int(x),int(y))
-    
+    global usuarioactivo
+    if not usuarioactivo.cargado:
+        for matriz in root.findall('matriz'):
+            x = matriz.find('x').text
+            y = matriz.find('y').text
+            usuarioactivo.matriz = Matriz(int(x),int(y))
+    else:
+        print('Matriz Existente')
     for operacion in root.iter('operacion'):
         usuarioactivo.cola.insertar(operacion.text)
     print('archivo leido')
@@ -322,6 +327,7 @@ def operaciones():
 def menumatriz():
     print("1. Ingresar Dato","2. Operar Transpuesta", "3. Mostrar Matriz Original", "4. Mostrar Matriz Transpuesta", "5. Regresar", sep="\n")
     opcion = input()
+    global usuarioactivo
     if opcion == '1':
         x = input('Ingrese la posicion en X: ')
         y = input('Ingrese la posicion en Y: ')
